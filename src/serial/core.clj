@@ -1,18 +1,20 @@
 (ns serial.core
   (:require [leipzig.melody :refer [bpm is phrase then times where with]]
             [overtone
-             [live :as overtone]]
-            [overtone.sc
-             [ugens :as scu]
-             [envelope :as sce]
-             [defcgen :as scdcgen]]
-            [overtone.inst.synth :as instsy]
+             [core :as overtone]]
+            ;; [overtone.sc
+            ;;  [ugens :as scu]
+            ;;  [envelope :as sce]
+            ;;  [defcgen :as scdcgen]]
+            ;; [overtone.inst.synth :as instsy]
             [leipzig.live :as live]
             [leipzig.scale :as scale]
             ;; [overtone.orchestra
             ;;  [oboe :refer [oboe]]
             ;;  [cello :refer [cello]]]
             ))
+
+(overtone/connect-external-server)
 
 (overtone/definst beep [freq 440 dur 1.0]
   (-> freq
