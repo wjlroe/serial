@@ -7,7 +7,7 @@
                  [overtone "0.9.1"]
                  [leipzig "0.8.1"]
                  [overtone.orchestra "0.1.0-SNAPSHOT"]]
-  :main serial.core
+;;  :main serial.twelve-tone
   :jvm-opts ^:replace [
                        "-Xms1g" "-Xmx8g"
                        "-XX:MaxGCPauseMillis=1000" ; Specify a target
