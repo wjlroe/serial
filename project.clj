@@ -6,8 +6,9 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [overtone "0.9.1"]
                  [leipzig "0.8.1"]
-                 [overtone.orchestra "0.1.0-SNAPSHOT"]]
-;;  :main serial.twelve-tone
+                 [enlive "1.1.5"]
+                 ]
+  ;;  :main serial.twelve-tone
   :jvm-opts ^:replace [
                        "-Xms1g" "-Xmx8g"
                        "-XX:MaxGCPauseMillis=1000" ; Specify a target
