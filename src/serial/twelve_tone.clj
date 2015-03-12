@@ -3,7 +3,14 @@
             [overtone.inst.sampled-piano :refer :all]
             [leipzig.live :as live]
             [leipzig.scale :as scale]
-            [leipzig.melody :refer [bpm is phrase then times where with]]))
+            [leipzig.melody :refer [bpm is phrase then times where with]]
+            [serial.sampled-violin :refer
+             [sampled-pizzicato-violin
+              sampled-non-vibrato-violin]]
+            [serial.sampled-cello :refer
+             [sampled-pizzicato-cello
+              sampled-non-vibrato-cello
+              sampled-vibrato-cello]]))
 
 (comment
   (on-event
@@ -20,6 +27,12 @@
               (println "note received:" m))
             ::midi-debug))
 
+(def violin-range (range 67 80))
+(def cello-range (range 50 63))
+(def piano-range (range 21 109))
+
+(defmethod live/play-note :violin [{midi :pitch seconds :duration}]
+  (-> midi (sampled-pizzicato-violin)))
 (defmethod live/play-note :default [{midi :pitch seconds :duration}]
   (-> midi (sampled-piano)))
 
@@ -64,8 +77,6 @@
 (comment
   (play-tone-row tone-row 90))
 
-
-
 (defn total-tone-row []
   (phrase (random-rhythms)
           (shuffle (range 0 12))))
@@ -79,6 +90,7 @@
   (let [my-row (random-pitches)]
     (play-tone-row (with (phrase (random-rhythms)
                                  my-row)
-                         (phrase (random-rhythms)
-                                 (retrograde-inversion my-row)))
+                         (->> (phrase (random-rhythms)
+                                      (retrograde-inversion my-row))
+                              (where :part (is :piano))))
                    60)))
