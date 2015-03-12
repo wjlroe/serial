@@ -27,12 +27,27 @@
               (println "note received:" m))
             ::midi-debug))
 
-(def violin-range (range 67 80))
-(def cello-range (range 50 63))
-(def piano-range (range 21 109))
+(def ranges
+  {:violin (range 67 80)
+   :cello (range 50 63)
+   :piano (range 21 109)})
 
+(defn mid-range
+  [r]
+  (let [inst-range (get ranges r (:piano ranges))
+        lowest (first inst-range)
+        highest (last inst-range)]
+    (+ lowest
+       (/ (- highest lowest) 2))))
+
+;; (sampled-pizzicato-cello :note 59)
+;; (sampled-vibrato-cello :note 59 :level 10)
 (defmethod live/play-note :violin [{midi :pitch seconds :duration}]
-  (-> midi (sampled-pizzicato-violin)))
+  (sampled-pizzicato-violin :note midi
+                            :level 8))
+(defmethod live/play-note :cello [{midi :pitch seconds :duration}]
+  (sampled-pizzicato-cello :note midi
+                           :level 8))
 (defmethod live/play-note :default [{midi :pitch seconds :duration}]
   (-> midi (sampled-piano)))
 
@@ -66,12 +81,25 @@
   (phrase (repeat 3/3)
           (random-pitches)))
 
+(defn play-in-range
+  [r row]
+  (->> row
+       (where :pitch (comp (scale/from (mid-range r))
+                           scale/chromatic))))
+
+(defn play-on
+  [instrument row]
+  (->> row
+       (where :part (is instrument))
+       (play-in-range instrument)))
+
 (defn play-tone-row
   [row bloops-per-minute]
   (->> row
        (where :time (bpm bloops-per-minute))
        (where :duration (bpm bloops-per-minute))
-       (where :pitch (comp (scale/from 60) scale/chromatic))
+       ;;(where :pitch (comp (scale/from 45) scale/chromatic))
+       ;;(where :pitch (comp (scale/from (mid-range piano-range)) scale/chromatic))
        live/play))
 
 (comment
@@ -86,11 +114,20 @@
 (comment
   (play-tone-row my-tone-row 60))
 
-(comment
-  (let [my-row (random-pitches)]
-    (play-tone-row (with (phrase (random-rhythms)
-                                 my-row)
-                         (->> (phrase (random-rhythms)
-                                      (retrograde-inversion my-row))
-                              (where :part (is :piano))))
-                   60)))
+(defn piano-trio
+  []
+  (let [my-row (random-pitches)
+        bpm 60]
+    (play-tone-row
+     (with
+      (->> (phrase (random-rhythms) my-row)
+           (play-on :cello))
+      (->> (phrase (random-rhythms)
+                   (retrograde-inversion my-row))
+           (play-on :violin))
+      (->> (phrase (random-rhythms)
+                   (retrograde my-row))
+           (play-on :piano)))
+     bpm)))
+
+(comment (piano-trio))
