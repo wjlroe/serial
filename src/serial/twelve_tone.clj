@@ -37,8 +37,8 @@
   (let [inst-range (get ranges r (:piano ranges))
         lowest (first inst-range)
         highest (last inst-range)]
-    (+ lowest
-       (/ (- highest lowest) 2))))
+    (int (+ lowest
+            (/ (- highest lowest) 2)))))
 
 ;; (sampled-pizzicato-cello :note 59)
 ;; (sampled-vibrato-cello :note 59 :level 10)
