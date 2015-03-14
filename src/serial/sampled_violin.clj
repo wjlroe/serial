@@ -54,13 +54,13 @@
 (definst sampled-pizzicato-violin
   [note 60 level 1 rate 1 loop? 0
    attack 0 decay 1 sustain 1 release 0.1
-   curve -4 gate 1]
+   curve -4 gate 1 position 0]
   (let [buf (index:kr (:id pizzicato-index-buffer) note)
         env (env-gen (adsr attack decay sustain release level curve)
                      :gate gate
                      :action FREE)]
     (* env
-       (scaled-play-buf 2 buf :level level :loop loop? :action FREE))))
+       (pan2 (scaled-play-buf 1 buf :level level :loop loop? :action FREE) position))))
 
 (defonce non-vibrato-index-buffer
   (let [tab (note-index non-vibrato-violin-samples FREESOUND-NON-VIBRATO-VIOLIN-SAMPLES)
@@ -73,10 +73,10 @@
 (definst sampled-non-vibrato-violin
   [note 60 level 1 rate 1 loop? 0
    attack 0 decay 1 sustain 1 release 0.1
-   curve -4 gate 1]
+   curve -4 gate 1 position 0]
   (let [buf (index:kr (:id non-vibrato-index-buffer) note)
         env (env-gen (adsr attack decay sustain release level curve)
                      :gate gate
                      :action FREE)]
     (* env
-       (scaled-play-buf 2 buf :level level :loop loop? :action FREE))))
+       (pan2 (scaled-play-buf 1 buf :level level :loop loop? :action FREE) position))))
