@@ -6,11 +6,23 @@
             [leipzig.melody :refer [bpm is phrase then times where with]]
             [serial.sampled-violin :refer
              [sampled-pizzicato-violin
-              sampled-non-vibrato-violin]]
+              sampled-non-vibrato-violin
+              sampled-vibrato-violin]]
             [serial.sampled-cello :refer
              [sampled-pizzicato-cello
               sampled-non-vibrato-cello
               sampled-vibrato-cello]]))
+
+(def pitch-transpose (atom 0))
+
+(comment
+  (on-event
+   [:midi :note-on]
+   (fn [m]
+     (let [p-transpose (- (:note m) 48)]
+       (println "pitch transpose by" p-transpose)
+       (swap! pitch-transpose (constantly (int p-transpose)))))
+   ::nanokey-pitch-transpose))
 
 (comment
   (on-event
@@ -32,12 +44,13 @@
    :cello (range 50 63)
    :piano (range 21 109)})
 
-(def styles
-  {:violin [::pizzicato
-            ::non-vibrato]
-   :cello [::pizzicato
-           ::non-vibrato
-           ::vibrato]})
+(def instruments
+  {::violin {:styles [::pizzicato
+                      ::non-vibrato
+                      ::vibrato]}
+   ::cello  {:style [::pizzicato
+                     ::non-vibrato
+                     ::vibrato]}})
 
 (defn mid-range
   [r]
@@ -51,22 +64,27 @@
 ;; (sampled-vibrato-cello :note 59 :level 10)
 (defmethod live/play-note :violin [{midi :pitch seconds :duration
                                     style :style}]
-  (condp = style
-    ::pizzicato (sampled-pizzicato-violin :note midi
-                                          :level 8)
-    ::non-vibrato (sampled-non-vibrato-violin :note midi
-                                              :level 8)))
+  (let [note (+ midi @pitch-transpose)]
+    (condp = style
+      ::pizzicato (sampled-pizzicato-violin :note note
+                                            :level 8)
+      ::non-vibrato (sampled-non-vibrato-violin :note note
+                                                :level 8)
+      ::vibrato (sampled-vibrato-violin :note note
+                                        :level 8))))
 (defmethod live/play-note :cello [{midi :pitch seconds :duration
                                    style :style}]
-  (condp = style
-    ::pizzicato (sampled-pizzicato-cello :note midi
-                                         :level 8)
-    ::non-vibrato (sampled-non-vibrato-cello :note midi
-                                             :level 8)
-    ::vibrato (sampled-vibrato-cello :note midi
-                                     :level 8)))
+  (let [note (+ midi @pitch-transpose)]
+    (condp = style
+            ::pizzicato (sampled-pizzicato-cello :note note
+                                                 :level 8)
+            ::non-vibrato (sampled-non-vibrato-cello :note note
+                                                     :level 8)
+            ::vibrato (sampled-vibrato-cello :note note
+                                             :level 8))))
 (defmethod live/play-note :default [{midi :pitch seconds :duration}]
-  (-> midi (sampled-piano)))
+  (let [note (+ midi @pitch-transpose)]
+    (sampled-piano :note note)))
 
 (defn random-rhythms
   []
