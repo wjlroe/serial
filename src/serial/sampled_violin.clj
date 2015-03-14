@@ -31,6 +31,17 @@
 (def non-vibrato-violin-samples
   (doall (map freesound-sample NON-VIBRATO-VIOLIN-SAMPLE-IDS)))
 
+;; Vibrato violin
+
+(def FREESOUND-VIBRATO-VIOLIN-SAMPLES
+  {153601 :E5 153604 :C#5 153608 :A4 153602 :D#5 153598 :G5 153609 :G#4 153610 :G4
+   153605 :C5 153600 :F5 153606 :B4 153603 :D5 153599 :F#5 153607 :A#4})
+
+(def VIBRATO-VIOLIN-SAMPLE-IDS (keys FREESOUND-VIBRATO-VIOLIN-SAMPLES))
+
+(def vibrato-violin-samples
+  (doall (map freesound-sample VIBRATO-VIOLIN-SAMPLE-IDS)))
+
 (defn- buffer->midi-note [buf note-map] (-> buf :freesound-id note-map name note))
 
 (defn- note-index [buffers note-map]
@@ -75,6 +86,25 @@
    attack 0 decay 1 sustain 1 release 0.1
    curve -4 gate 1 position 0]
   (let [buf (index:kr (:id non-vibrato-index-buffer) note)
+        env (env-gen (adsr attack decay sustain release level curve)
+                     :gate gate
+                     :action FREE)]
+    (* env
+       (pan2 (scaled-play-buf 1 buf :level level :loop loop? :action FREE) position))))
+
+(defonce vibrato-index-buffer
+  (let [tab (note-index vibrato-violin-samples FREESOUND-VIBRATO-VIOLIN-SAMPLES)
+        buf (buffer 128)]
+    (buffer-fill! buf (:id silent-buffer))
+    (doseq [[idx val] tab]
+      (buffer-set! buf idx val))
+    buf))
+
+(definst sampled-vibrato-violin
+  [note 60 level 1 rate 1 loop? 0
+   attack 0 decay 1 sustain 1 release 0.1
+   curve -4 gate 1 position 0]
+  (let [buf (index:kr (:id vibrato-index-buffer) note)
         env (env-gen (adsr attack decay sustain release level curve)
                      :gate gate
                      :action FREE)]
