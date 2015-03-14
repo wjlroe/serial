@@ -1,12 +1,11 @@
 # serial
 
-Total Serialism. Totally.
+Experiments in Total Serialism. I have no idea what I'm doing.
 
 ## Usage
 
-To download all the samples:
-
-    ./download-sounds.sh
+Not very usable at the moment - load up a repl, connect with emacs and
+mess about.
 
 ## License
 
