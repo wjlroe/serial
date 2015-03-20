@@ -45,12 +45,12 @@
    :piano (range 21 109)})
 
 (def instruments
-  {::violin {:styles [::pizzicato
-                      ::non-vibrato
-                      ::vibrato]}
-   ::cello  {:style [::pizzicato
-                     ::non-vibrato
-                     ::vibrato]}})
+  {:violin {:styles [:pizzicato
+                     :non-vibrato
+                     :vibrato]}
+   :cello  {:style [:pizzicato
+                    :non-vibrato
+                    :vibrato]}})
 
 (defn mid-range
   [r]
@@ -60,31 +60,34 @@
     (int (+ lowest
             (/ (- highest lowest) 2)))))
 
+(def note-level-default 6)
+(def piano-level-default 0.8)
 ;; (sampled-pizzicato-cello :note 59)
 ;; (sampled-vibrato-cello :note 59 :level 10)
-(defmethod live/play-note :violin [{midi :pitch seconds :duration
-                                    style :style}]
+(defmethod live/play-note :violin [{midi :pitch seconds :duration style :style}]
+  (let [note (+ midi @pitch-transpose)]
+    (println "Style: " style)
+    (condp = style
+      :pizzicato (sampled-pizzicato-violin :note note
+                                           :level note-level-default)
+      :non-vibrato (sampled-non-vibrato-violin :note note
+                                               :level note-level-default)
+      :vibrato (sampled-vibrato-violin :note note
+                                       :level note-level-default))))
+(defmethod live/play-note :cello [{midi :pitch seconds :duration style :style}]
   (let [note (+ midi @pitch-transpose)]
     (condp = style
-      ::pizzicato (sampled-pizzicato-violin :note note
-                                            :level 8)
-      ::non-vibrato (sampled-non-vibrato-violin :note note
-                                                :level 8)
-      ::vibrato (sampled-vibrato-violin :note note
-                                        :level 8))))
-(defmethod live/play-note :cello [{midi :pitch seconds :duration
-                                   style :style}]
+      :pizzicato (sampled-pizzicato-cello :note note
+                                          :level note-level-default)
+      :non-vibrato (sampled-non-vibrato-cello :note note
+                                              :level note-level-default)
+      :vibrato (sampled-vibrato-cello :note note
+                                      :level note-level-default))))
+(defmethod live/play-note :piano [{midi :pitch seconds :duration}]
   (let [note (+ midi @pitch-transpose)]
-    (condp = style
-            ::pizzicato (sampled-pizzicato-cello :note note
-                                                 :level 8)
-            ::non-vibrato (sampled-non-vibrato-cello :note note
-                                                     :level 8)
-            ::vibrato (sampled-vibrato-cello :note note
-                                             :level 8))))
+    (sampled-piano :note note :level 0.8)))
 (defmethod live/play-note :default [{midi :pitch seconds :duration}]
-  (let [note (+ midi @pitch-transpose)]
-    (sampled-piano :note note)))
+  (println "Ah! Don't know what instrument default is!!!"))
 
 (defn random-rhythms
   []
@@ -111,9 +114,12 @@
 
 (defn total-serial
   [row]
-  (phrase (squash-durations (random-rhythms)
-                            row)
-          row))
+  (reduce (fn [p1 p2]
+            (then p2 p1))
+          (map (fn [r]
+                 (phrase (squash-durations (random-rhythms) r)
+                         r))
+               (serial-transforms row))))
 
 (defn random-pitches
   []
@@ -146,6 +152,13 @@
   [row]
   (map chordify (partition 6 row)))
 
+(def transforms
+  [identity retrograde inversion retrograde-inversion hexachords])
+
+(defn serial-transforms
+  [row]
+  (map #(% row) (shuffle transforms)))
+
 (def row-of-notes
   (phrase (repeat 3/3)
           (range 0 12)))
@@ -164,7 +177,7 @@
 
 (defn serial-style
   [instrument row]
-  (let [available (cycle (shuffle (get styles instrument [::default])))]
+  (let [available (cycle (shuffle (get-in instruments [instrument :styles] [:default])))]
     (map-indexed (fn [i note]
                    (assoc note :style (nth available i)))
                  row)))
@@ -192,14 +205,22 @@
     (->> (total-serial tone-row)
          (play-on :cello)
          (serial-style :cello))
-    (->> (total-serial (retrograde-inversion tone-row))
+    (->> (total-serial tone-row)
          (play-on :violin)
          (serial-style :violin))
-    (->> (total-serial (hexachords (retrograde tone-row)))
+    (->> (total-serial tone-row)
          (play-on :piano)
          (serial-style :piano)))))
 
 (def tone-row1 (random-pitches))
 (comment (piano-trio 60 tone-row1))
 (comment
-  (live/play (piano-trio 60 tone-row1)))
+  (live/play (in-tempo 60 (play-on :violin (phrase (random-rhythms) tone-row1))))
+  )
+(comment (serial-transforms tone-row1))
+(comment
+  (recording-start "~/Desktop/serial1.wav")
+  (live/play (piano-trio 60 tone-row1))
+  (recording-stop))
+
+;; (sampled-piano :note 60 :level 0.8)
