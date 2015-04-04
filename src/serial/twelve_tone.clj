@@ -112,23 +112,6 @@
 (comment (squash-durations (random-rhythms)
                            (hexachords (random-pitches))))
 
-(defn total-serial
-  [row]
-  (reduce (fn [p1 p2]
-            (then p2 p1))
-          (map (fn [r]
-                 (phrase (squash-durations (random-rhythms) r)
-                         r))
-               (serial-transforms row))))
-
-(defn random-pitches
-  []
-  (shuffle (range 0 12)))
-
-(defn random-tone-row
-  []
-  (shuffle (range 0 12)))
-
 (defn retrograde
   [row]
   (reverse row))
@@ -137,7 +120,8 @@
   [row]
   (map - row))
 
-(def retrograde-inversion (comp retrograde inversion))
+(def retrograde-inversion
+  (comp retrograde inversion))
 
 (defn chord-key
   [k]
@@ -158,6 +142,27 @@
 (defn serial-transforms
   [row]
   (map #(% row) (shuffle transforms)))
+
+(defn total-serial
+  [row]
+  (reduce (fn [p1 p2]
+            (then p2 p1))
+          (map (fn [r]
+                 (phrase (squash-durations (random-rhythms) r)
+                         r))
+               (serial-transforms row))))
+
+(defn random-pitches
+  []
+  (shuffle (range 0 12)))
+
+(defn random-tone-row
+  []
+  (shuffle (range 0 12)))
+
+
+
+
 
 (def row-of-notes
   (phrase (repeat 3/3)
