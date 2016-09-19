@@ -3,7 +3,9 @@
             [overtone.inst.sampled-piano :refer :all]
             [leipzig.live :as live]
             [leipzig.scale :as scale]
-            [leipzig.melody :refer [bpm is phrase then times where with]]
+            [leipzig.chord :as chord]
+            [leipzig.temperament :as temperament]
+            [leipzig.melody :refer [bpm is phrase then times where with wherever]]
             [serial.sampled-violin :refer
              [sampled-pizzicato-violin
               sampled-non-vibrato-violin
@@ -11,7 +13,8 @@
             [serial.sampled-cello :refer
              [sampled-pizzicato-cello
               sampled-non-vibrato-cello
-              sampled-vibrato-cello]]))
+              sampled-vibrato-cello]]
+            [serial.harpsichord :as harpsichord]))
 
 (def pitch-transpose (atom 0))
 
@@ -220,7 +223,11 @@
 (def tone-row1 (random-pitches))
 (comment (piano-trio 60 tone-row1))
 (comment
-  (live/play (in-tempo 60 (play-on :violin (phrase (random-rhythms) tone-row1))))
+  (live/play
+   (in-tempo 60
+             (play-on :piano (phrase (chord/triad)))))
+  (sampled-piano :note 24 :level 1.5)
+  (live/play (in-tempo 60 (play-on :piano (phrase (random-rhythms) tone-row1))))
   )
 (comment (serial-transforms tone-row1))
 (comment
