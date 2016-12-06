@@ -232,7 +232,8 @@
   (live/play (in-tempo 60 (play-on :piano (phrase (random-rhythms) tone-row1))))
   )
 (comment (serial-transforms tone-row1))
-(comment
+
+(defn record-the-trio []
   (recording-start "~/Desktop/serial1.wav")
   (live/play (piano-trio 60 tone-row1))
   (recording-stop))
