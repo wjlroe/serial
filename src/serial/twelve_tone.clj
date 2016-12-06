@@ -1,5 +1,5 @@
 (ns serial.twelve-tone
-  (:require [overtone.live :refer :all]
+  (:require [overtone.core :refer :all]
             [overtone.inst.sampled-piano :refer :all]
             [leipzig.live :as live]
             [leipzig.scale :as scale]
@@ -15,6 +15,8 @@
               sampled-non-vibrato-cello
               sampled-vibrato-cello]]
             [serial.harpsichord :as harpsichord]))
+
+(overtone/connect-external-server)
 
 (def pitch-transpose (atom 0))
 
